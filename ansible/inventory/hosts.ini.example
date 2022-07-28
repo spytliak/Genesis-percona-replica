@@ -1,0 +1,17 @@
+[master]
+44.201.120.255
+
+[slave]
+54.161.205.197
+
+[master:vars]
+ansible_ssh_user = ubuntu
+ansible_ssh_private_key_file = ../terraform/project_percona/genesis_ssh_key.pem
+server_id = 101
+private_ip = 10.10.1.59
+
+[slave:vars]
+ansible_ssh_user = ubuntu
+ansible_ssh_private_key_file = ../terraform/project_percona/genesis_ssh_key.pem
+server_id = 102
+private_ip = 10.10.1.49

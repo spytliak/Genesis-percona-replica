@@ -1,0 +1,11 @@
+---
+- name: Disable ufw Ubuntu
+  include_tasks: ufw.yml
+  tags: 
+    - ufw
+
+- name: Install Percona
+  include_tasks: install_percona.yml
+  tags: 
+    - percona
+

@@ -1,0 +1,46 @@
+---
+- name: Update all packages
+  apt:
+    update_cache: yes
+    name: "*"
+    state: latest
+
+- name: update the apt package index and install dependencies
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  loop: "{{ percona.apt_list }}"
+
+- name: add Percona repo
+  apt:
+    deb: "{{ percona.repo }}"
+  
+- name: set Percona dist
+  shell: |
+    percona-release setup ps80
+
+- name: install Percona 8.0
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  loop: "{{ percona.packages }}"
+  changed_when: true
+
+- name:  run and enable Mysql
+  systemd:
+    name: "mysql"
+    state: started
+    enabled: yes
+
+- name: check percona and mysql versions
+  shell: |
+    /usr/bin/mysql --version
+  register: versions_check
+
+  #    /usr/bin/percona version
+
+- name: debug percona
+  ansible.builtin.debug:
+    msg: "{{ versions_check.stdout.split('\n') }}"
