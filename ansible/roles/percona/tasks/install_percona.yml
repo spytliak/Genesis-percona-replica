@@ -1,16 +1,21 @@
 ---
-- name: Update all packages
+- name: update all packages
   apt:
     update_cache: yes
     name: "*"
     state: latest
 
-- name: update the apt package index and install dependencies
+- name: install dependencies
   apt:
     name: "{{ item }}"
     state: present
     update_cache: yes
   loop: "{{ percona.apt_list }}"
+
+- name: install PyMySQL
+  pip:
+    name:
+      - PyMySQL
 
 - name: add Percona repo
   apt:
@@ -34,12 +39,11 @@
     state: started
     enabled: yes
 
-- name: check percona and mysql versions
+- name: check percona-release and mysql versions
   shell: |
+    /usr/bin/percona-release show
     /usr/bin/mysql --version
   register: versions_check
-
-  #    /usr/bin/percona version
 
 - name: debug percona
   ansible.builtin.debug:

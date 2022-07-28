@@ -16,6 +16,7 @@ percona:
     - percona-server-server
     - percona-server-client
     - percona-server-dbg
+    - percona-xtrabackup-24
     - libperconaserverclient21-dev
     - libperconaserverclient21
 
@@ -25,4 +26,7 @@ ufw:
     enabled: "no"
 
 system_user: "{{ ansible_user }}"
+
+mysql:
+  cnf: /etc/mysql/mysql.conf.d/mysql.cnf
 

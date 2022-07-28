@@ -9,3 +9,7 @@
   tags: 
     - percona
 
+- name: Configure Mysql Replica
+  include_tasks: replica.yml
+  tags: 
+    - replica

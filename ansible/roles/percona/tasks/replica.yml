@@ -1,0 +1,24 @@
+---
+- name: copy mysqld conf file
+  template:
+    src: templates/mysqld.cnf.j2
+    dest: "{{ mysql.cnf }}"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: restart mysql
+  systemd:
+    name: mysql
+    state: restarted
+
+
+
+
+- name: make new database user
+  mysql_user: 
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    name: "{{ percona_username }}"
+    password: "{{ percona_password }}"
+    priv: "*.*:ALL"
+    state: present
