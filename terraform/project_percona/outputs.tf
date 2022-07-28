@@ -28,21 +28,21 @@ output "Instances_info" {
   value = {
     master_server = {
       "${lookup(aws_instance.master.tags_all, "Name")}" = {
-        id  = aws_instance.master.id,
+        id         = aws_instance.master.id,
         public_ip  = aws_instance.master.public_ip,
         private_ip = aws_instance.master.private_ip,
-        arn = aws_instance.master.arn,
-        dns = aws_instance.master.public_dns
+        arn        = aws_instance.master.arn,
+        dns        = aws_instance.master.public_dns
       }
     },
     slave_servers = {
       for k, slave in aws_instance.slave : k => {
-        Name = lookup(slave.tags_all, "Name")
-        id  = slave.id,
+        Name       = lookup(slave.tags_all, "Name")
+        id         = slave.id,
         public_ip  = slave.public_ip,
         private_ip = slave.private_ip,
-        arn = slave.arn,
-        dns = slave.public_dns
+        arn        = slave.arn,
+        dns        = slave.public_dns
       }
     }
   }

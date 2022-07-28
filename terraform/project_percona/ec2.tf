@@ -4,8 +4,8 @@
 # - Master Server
 #-------------------------------------------------------------------
 resource "aws_instance" "master" {
-  ami               = data.aws_ami.ubuntu_linux_latest.id
-  instance_type     = var.instance_type["master"]
+  ami           = data.aws_ami.ubuntu_linux_latest.id
+  instance_type = var.instance_type["master"]
   vpc_security_group_ids = [
     aws_security_group.ssh.id,
     aws_security_group.mysql.id
@@ -63,9 +63,9 @@ resource "aws_volume_attachment" "master_volume" {
 # - Slave Servers
 #-------------------------------------------------------------------
 resource "aws_instance" "slave" {
-  count             = var.vm_slave_count
-  ami               = data.aws_ami.ubuntu_linux_latest.id
-  instance_type     = var.instance_type["slave"]
+  count         = var.vm_slave_count
+  ami           = data.aws_ami.ubuntu_linux_latest.id
+  instance_type = var.instance_type["slave"]
   vpc_security_group_ids = [
     aws_security_group.ssh.id,
     aws_security_group.mysql.id

@@ -1,5 +1,5 @@
 locals {
 
-  azs = slice(data.aws_availability_zones.available.names,1,3)
+  azs = slice(data.aws_availability_zones.available.names, 1, 3)
 
 }

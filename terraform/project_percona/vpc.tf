@@ -9,13 +9,13 @@ module "vpc" {
   name    = var.project
   cidr    = var.vpc_cidr
 
-  azs            = local.azs
+  azs = local.azs
 
   public_subnets = var.public_subnet_cidrs
   public_subnet_tags = {
     Name = "Public-subnet-${var.project}-${var.env}"
   }
- 
+
   private_subnets = var.privet_subnet_cidrs
   private_subnet_tags = {
     Name = "Private-subnet-${var.project}-${var.env}"

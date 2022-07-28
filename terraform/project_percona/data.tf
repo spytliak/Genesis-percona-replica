@@ -4,7 +4,7 @@
 data "aws_region" "current" {}
 
 data "aws_availability_zones" "available" {
-   state = "available"
+  state = "available"
 }
 
 data "aws_ami" "ubuntu_linux_latest" {
@@ -25,4 +25,8 @@ data "aws_subnets" "public" {
   tags = {
     Name = "Public-subnet-${var.project}-${var.env}"
   }
+
+  depends_on = [
+    module.vpc
+  ]
 }
