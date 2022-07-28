@@ -1,0 +1,149 @@
+name: Percona
+
+on:
+  push: 
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+  workflow_dispatch:
+     inputs:
+       TF_LOG:
+        description: 'Terraform LOG'
+        required: false
+        default: 'INFO' 
+        type: choice
+        options:
+        - INFO
+        - DEBUG
+        - TRACE
+       ANSIBLE_DEBUG:
+         type: boolean
+         required: false
+         default: false
+         description: 'Ansible Debug'
+
+#env:
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    outputs:
+      hosts: ${{ steps.APP_instances_ip.outputs.hosts }}
+    env:
+      TF_LOG: ${{ inputs.TF_LOG }}
+      ANSIBLE_DEBUG: ${{ inputs.ANSIBLE_DEBUG }}
+      ANSIBLE_FORCE_COLOR: True
+      COLOR_DEBUG: blue
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./terraform/project_percona
+
+    steps:
+
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Setup Python and pip 
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+
+    # Install the latest version of Ansible (All actions use old version)
+    - name: Setup Ansible and jq
+      run: pip install ansible jq --user
+
+    # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.2.4
+        terraform_wrapper: false
+
+    # Checks that all Terraform configuration files adhere to a canonical format
+    - name: Terraform Format
+      id: tf_fmt
+      continue-on-error: true
+      run: terraform fmt -check
+
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+    - name: Terraform Init
+      id: tf_init
+      continue-on-error: false
+      run: terraform init
+
+    # Validates the configuration files in a directory
+    - name: Terraform Validate
+      id: tf_validate
+      continue-on-error: false
+      run: terraform validate -no-color
+
+    # Generates an execution plan for Terraform
+    - name: Terraform Plan
+      id: tf_plan
+      continue-on-error: false
+      run: terraform plan -input=false
+
+    # Build or change infrastructure according to Terraform configuration files
+    - name: Terraform Apply
+      id: tf_apply
+      continue-on-error: false
+      if: steps.tf_plan.outcome == 'success'
+      run: terraform apply -auto-approve -input=false
+
+    - name: Check project folder and ssh-key
+      if: steps.tf_apply.outcome == 'success'
+      run: |
+        ls -la .
+        test -f genesis_ssh_key.pem || terraform output ssh_key > genesis_ssh_key.pem && chmod 600 genesis_ssh_key.pem
+
+    # Build APP on servers
+    - name: Run playbook
+      id: playbook
+      if: steps.tf_apply.outcome == 'success'
+      run: |
+        cd ../../ansible
+        ansible-playbook -i ./inventory/hosts.ini ./playbooks/genesis_app.yml -v
+
+    # Save all terraform output
+    - name: Save terraform output
+      id: output
+      continue-on-error: true
+      if: steps.APP_instances_ip.outcome == 'success'
+      run: |
+        terraform output -json > ../../terraform.log
+        ls -la ../../terraform.log
+
+    # Upload artifact
+    - name: Upload terraform output artifact
+      if: steps.output.outcome == 'success'
+      uses: actions/upload-artifact@v3
+      with:
+        name: terraform
+        path: terraform.log
+
+  report:
+    name: Report
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    needs: deploy
+    if: always()
+
+    steps:
+      # Notification to SLACK chat
+      - name: Notification to Slack
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ needs.deploy.result }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took,pullRequest
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
