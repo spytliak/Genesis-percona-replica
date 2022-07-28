@@ -112,7 +112,7 @@ jobs:
       if: steps.tf_apply.outcome == 'success'
       run: |
         cd ../../ansible
-        ansible-playbook -i ./inventory/hosts.ini ./playbooks/genesis_app.yml -v
+        ansible-playbook -i ./inventory/hosts.ini ./playbooks/replica.yml -v
 
     # Save all terraform output
     - name: Save terraform output
