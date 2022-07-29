@@ -38,7 +38,7 @@ The project is in [project_percona](/terraform/project_percona/)
 * [security_group.tf](/terraform/project_percona/security_group.tf)                 - deploy all security groups (for ec2)
 * [variables.tf](/terraform/project_percona/variables.tf)                           - all default variables
 * [vpc.tf](/terraform/project_percona/vpc.tf)                                       - deploy VPC
-* [locals.tf](/terraform/project_eks/locals.tf)                                     - all locals of project
+* [locals.tf](/terraform/project_percona/locals.tf)                                     - all locals of project
 
 
 #### Directory tree - Terraform
@@ -64,14 +64,14 @@ The playbooks are in [playbooks](/ansible/playbooks/) subdirectory.
 The roles are in [roles](/ansible/roles/) subdirectory.  
 
 * [replica.yml](/ansible/playbooks/replica.yml)                            - the playbook for install Replica
-* [replica.yml](/ansible/roles/percona/tasks/app.yml)                              - configure Replica
+* [replica.yml](/ansible/roles/percona/tasks/replica.yml)                              - configure Replica
 * [install_percona.yml](/ansible/roles/percona/tasks/install_percona.yml)        - install Percona
 * [ufw.yml](/ansible/roles/percona/tasks/ufw.yml)                              - disable ufw in ubuntu  
 * [main.yml](/ansible/roles/percona/tasks/main.yml)                            - the main playbook with include all tasks  
 * [mysqld.cnf.j2](/ansible/roles/percona/templates/mysqld.cnf.j2)             - the template for mysql conf 
 * [main.yml](/ansible//roles/percona/defaults/main.yml)                        - the variables for role
-* [all.yaml](/ansible/inventory/group_vars/all/all.yaml)                           - the group variables 
-* [secret.yaml](/ansible/inventory/group_vars/all/secret.yaml)                     - the variable with mysql password  
+* [all.yml](/ansible/inventory/group_vars/all/all.yml)                           - the group variables 
+* [secret.yaml](/ansible/inventory/group_vars/all/secret.yml)                     - the variable with mysql password  
 * [hosts.ini.example](/ansible/inventory/hosts.ini.example)                        - the hosts file example
 
 #### Directory tree - Ansible
@@ -79,8 +79,8 @@ The roles are in [roles](/ansible/roles/) subdirectory.
 ├── inventory
 |   ├── group_vars
 |   |   └── all
-|   |        ├── all.yaml
-|   |        └── secret.yaml
+|   |        ├── all.yml
+|   |        └── secret.yml
 |   └── hosts.ini.example
 |
 ├── playbooks
