@@ -46,5 +46,5 @@
   register: versions_check
 
 - name: debug percona
-  ansible.builtin.debug:
+  debug:
     msg: "{{ versions_check.stdout.split('\n') }}"

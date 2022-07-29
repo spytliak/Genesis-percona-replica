@@ -15,8 +15,6 @@ percona:
   packages:
     - percona-server-server
     - percona-server-client
-    - percona-server-dbg
-    - percona-xtrabackup-24
     - libperconaserverclient21-dev
     - libperconaserverclient21
 
@@ -29,4 +27,9 @@ system_user: "{{ ansible_user }}"
 
 mysql:
   cnf: /etc/mysql/mysql.conf.d/mysql.cnf
+  replication_user: replica
+  replication_user_priv: "*.*:REPLICATION SLAVE"
+  host: "10.10.%.%"
+  log_file: "mysql-bin.000001"
+  log_pos: "777"
 

@@ -12,13 +12,68 @@
     name: mysql
     state: restarted
 
-
-
-
-- name: make new database user
+- name: create user on master
   mysql_user: 
     login_unix_socket: /var/run/mysqld/mysqld.sock
-    name: "{{ percona_username }}"
-    password: "{{ percona_password }}"
-    priv: "*.*:ALL"
+    name: "{{ mysql.replication_user }}"
+    password: "{{ mysql_replication_password }}"
+    host: "{{ mysql.host | d('%') }}"
+    priv: "{{ mysql.replication_user_priv | d('*.*:REPLICATION SLAVE,REPLICATION CLIENT') }}"
     state: present
+  when: inventory_hostname == item
+  with_items: "{{ groups['master'] }}"
+
+- name: stop replica
+  mysql_replication:
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    mode: stopreplica
+  when: inventory_hostname == item 
+  with_items: "{{ groups['slave'] }}"
+  changed_when: true
+
+- name: configure replication on the slave
+  mysql_replication:
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    mode: changeprimary
+    primary_host: '{{ hostvars["master-dev"]["private_ip"] }}'
+    primary_user: "{{ mysql.replication_user }}"
+    primary_password: "{{ mysql_replication_password }}"
+    primary_log_file: "{{ mysql.log_file }}"
+    primary_log_pos: "{{ mysql.log_pos }}"
+  when: inventory_hostname == item
+  with_items: "{{ groups['slave'] }}"
+
+- name: start replica
+  mysql_replication:
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    mode: startreplica
+  when: inventory_hostname == item 
+  with_items: "{{ groups['slave'] }}"
+
+- name: check master status
+  mysql_replication:
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    mode: getprimary
+  register: master_status
+  when: inventory_hostname == item 
+  with_items: "{{ groups['master'] }}"
+
+- name: check replica status
+  mysql_replication:
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    mode: getreplica
+  register: replica_status
+  when: inventory_hostname == item 
+  with_items: "{{ groups['slave'] }}"
+
+- name: show master status
+  debug:
+    var: master_status
+  when: inventory_hostname == item 
+  with_items: "{{ groups['master'] }}"
+
+- name: show replica status
+  debug:
+    var: replica_status
+  when: inventory_hostname == item 
+  with_items: "{{ groups['slave'] }}"
