@@ -4,10 +4,12 @@
 resource "local_file" "host" {
   content = templatefile("./templates/ansible_host.tpl",
     {
-      master_public_ip             = aws_instance.master[*].public_ip
-      master_private_ip            = aws_instance.master[*].private_ip
+      master_name                  = lookup(aws_instance.master.tags_all, "Name")
+      master_public_ip             = aws_instance.master.public_ip
+      master_private_ip            = aws_instance.master.private_ip
+      slave_names                  = {for k, name in aws_instance.slave : k => lookup(name.tags_all, "Name")}
       slave_public_ips             = aws_instance.slave[*].public_ip
-      slave_private_ip             = aws_instance.slave[*].private_ip
+      slave_private_ips             = aws_instance.slave[*].private_ip
       ansible_ssh_user             = var.ssh_user_name
       ansible_ssh_private_key_file = "../terraform/project_percona/${var.ssh_key["name"]}.pem"
     }
